@@ -1,0 +1,207 @@
+#compdef docker-machine
+
+# docker-machine autocompletion fo oh-my-zsh
+# Version 0.1
+# Authors Jean <denggang80@gmail.com>
+# Inspiration: oh-my-zsh docker autocompletion
+# -------------------------------------------------------------------------
+
+
+__docker_machines_list() {
+    declare -a m_cmd
+    m_cmd=($(docker-machine ls | awk 'NR>1{print $1":["$1"("$2")-"$3"-"$4"]"}'))
+    if [[ 'X$m_cmd' != 'X' ]]
+        _describe 'machines' m_cmd
+}
+
+__docker_machines_running() {
+    declare -a m_cmd
+    m_cmd=($(docker-machine ls | awk '$4 == "Running"{print $1":["$1"("$2")"$3"-"$4"]"}'))
+    if [[ 'X$m_cmd' != 'X' ]]
+        _describe 'machines' m_cmd
+}
+
+__docker_machines_stopped() {
+    declare -a m_cmd
+    m_cmd=($(docker-machine ls | awk '$4 == "Stopped"{print $1":["$1"("$2")"$3"-"$4"]"}'))
+    if [[ 'X$m_cmd' != 'X' ]]
+        _describe 'machines' m_cmd
+}
+
+
+__config() {
+    __docker_machines_running
+}
+
+__create() {
+    _arguments \
+        '(--driver, -d)'{-d,--driver}'[Driver to create machine with.]' \
+        '--engine-install-url=[Custom URL to use for engine installation $MACHINE_DOCKER_INSTALL_URL]' \
+        '--engine-opt=[Specify arbitrary flags to include with the created engine in the form flag=value]' \
+        '--engine-insecure-registry=[Specify insecure registries to allow with the created engine]'\
+        '--engine-registry-mirror=[Specify registry mirrors to use]' \
+        '--engine-label=[Specify labels for the created engine]' \
+        '--engine-storage-driver=[Specify a storage driver to use with the engine]' \
+        '--engine-env=[Specify environment variables to set in the engine]' \
+        '--swarm=[Configure Machine with Swarm]' \
+        '--swarm-image=["swarm:latest" Specify Docker image to use for Swarm $MACHINE_SWARM_IMAGE]' \
+        '--swarm-master=[Configure Machine to be a Swarm master]' \
+        '--swarm-discovery=[Discovery service to use with Swarm]' \
+        '--swarm-strategy=["spread" Define a default scheduling strategy for Swarm]' \
+        '--swarm-opt=[Define arbitrary flags for swarm]' \
+        '--swarm-host=["tcp://0.0.0.0:3376" ip/socket to listen on for Swarm master]' \
+        '--swarm-addr=[addr to advertise for Swarm (default: detect and use the machine IP)]' \
+        '--tls-san=[Support extra SANs for TLS certs]'
+}
+
+
+__env() {
+    _arguments \
+        '--swarm=[Display the Swarm config instead of the Docker daemon]' \
+        '--shell=[Force environment to be configured for a specified shell: fish, cmd, powershell, default is sh/bash]' \
+        '(-u,--unset)'{-u,--unset}'[Unset variables instead of setting them]' \
+        '--no-proxy=[Add machine IP to NO_PROXY environment variable]'
+    __docker_machines_running
+}
+
+__inspect() {
+    _arguments \
+        '(-f,--format)'{-f,--format}'[Format the output using the given go template.]'
+    __docker_machines_running
+}
+
+__ip() {
+    __docker_machines_running
+}
+
+__kill() {
+    __docker_machines_running
+}
+
+__ls() {
+    _arguments \
+        '(-q,--quiet)'{-q,--quiet}'[Enable quiet mode]' \
+        '--filter=[Filter output based on conditions provided]' \
+        '(-t,--timeout)'{-t,--timeout}'[Timeout in seconds, default to 10s]' \
+        '(-f,--format)'{-f,--format}'[Pretty-print machines using a Go template]'
+}
+
+__regenerate_certs() {
+    _arguments \
+        '(-f,--force)'{-f,--force}'[Force rebuild and do not prompt]'
+}
+
+__restart() {
+    __docker_machines_running
+}
+
+__rm() {
+    _arguments \
+        '(-f,--force)'{-f,--force}'[Remove local configuration even if machine cannot be removed, also implies an automatic yes (`-y`)]' \
+        '-y[Assumes automatic yes to proceed with remove, without prompting further user confirmation]'
+        __docker_machines_list
+}
+
+__scp() {
+    _arguments \
+        '(-r,--recursive)'{-r,--recursive}'[Copy files recursively (required to copy directories)]'
+    __docker_machines_running
+}
+
+__ssh() {
+    __docker_machines_running
+}
+
+__start() {
+    __docker_machines_stopped
+}
+
+__status() {
+    __docker_machines_list
+}
+
+__stop() {
+    __docker_machines_running
+}
+
+__upgrade() {
+    __docker_machines_running
+}
+
+__url() {
+    __docker_machines_running
+}
+
+__version() {
+    __docker_machines_running
+}
+
+local -a _1st_arguments
+_1st_arguments=(
+    "active":"Print which machine is active"
+    "config":"Print the connection config for machine"
+    "create":"Create a machine"
+    "env":"Display the commands to set up the environment for the Docker client"
+    "inspect":"Inspect information about a machine"
+    "ip":"Get the IP address of a machine"
+    "kill":"Kill a machine"
+    "ls":"List machines"
+    "regenerate-certs":"Regenerate TLS Certificates for a machine"
+    "restart":"Restart a machine"
+    "rm":"Remove a machine"
+    "ssh":"Log into or run a command on a machine with SSH."
+    "scp":"Copy files between machines"
+    "start":"Start a machine"
+    "status":"Get the status of a machine"
+    "stop":"Stop a machine"
+    "upgrade":"Upgrade a machine to the latest version of Docker"
+    "url":"Get the URL of a machine"
+    "version":"Show the Docker Machine version or a machine docker version"
+)
+
+_arguments '*:: :->command'
+
+if (( CURRENT == 1 )); then
+    _describe -t commands "docker-machine command" _1st_arguments
+    return
+fi
+
+local -a _command_args
+case "$words[1]" in
+    config)
+        __config ;;
+    create)
+        __create ;;
+    env)
+        __env ;;
+    inspect)
+        __inspect ;;
+    ip)
+        __ip ;;
+    kill)
+        __kill ;;
+    ls)
+        __ls ;;
+    regenerate-certs)
+        __regenerate_certs ;;
+    restart)
+        __restart ;;
+    rm)
+        __rm ;;
+    scp)
+        __scp ;;
+    ssh)
+        __ssh ;;
+    start)
+        __start ;;
+    status)
+        __status ;;
+    stop)
+        __stop ;;
+    upgrade)
+        __upgrade ;;
+    url)
+        __url ;;
+    version)
+        __version ;;
+esac
